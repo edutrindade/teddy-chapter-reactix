@@ -1,3 +1,4 @@
+import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import React, { memo, useEffect, useRef, useState } from "react";
 import {
   Keyboard,
@@ -9,33 +10,32 @@ import {
   ViewStyle,
 } from "react-native";
 import Animated, {
-  useSharedValue,
   useAnimatedStyle,
+  useSharedValue,
   withSpring,
   type SharedValue,
 } from "react-native-reanimated";
 import Svg, {
   Circle,
   Defs,
-  LinearGradient as SvgGradient,
   Path,
   Stop,
+  LinearGradient as SvgGradient,
 } from "react-native-svg";
-import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import type {
-  BackgroundCurveProps,
-  CurvedBottomTabsProps,
-  FloatingButtonComponentProps,
-  StyleConfig,
-  Tab,
-  CurvedTabBarNavigationProps,
-} from "./types";
 import {
   calculateTabPosition,
   processGradient,
   VIEWPORT_HEIGHT,
   VIEWPORT_WIDTH,
 } from "./helper";
+import type {
+  BackgroundCurveProps,
+  CurvedBottomTabsProps,
+  CurvedTabBarNavigationProps,
+  FloatingButtonComponentProps,
+  StyleConfig,
+  Tab,
+} from "./types";
 
 const FloatingButtonComponent: React.FC<FloatingButtonComponentProps> =
   memo<FloatingButtonComponentProps>(
@@ -84,6 +84,7 @@ const FloatingButtonComponent: React.FC<FloatingButtonComponentProps> =
               justifyContent: "center",
               width: buttonSize,
               height: buttonSize,
+              transform: [{ scale: 1.15 }],
             }}
           >
             {icon}
@@ -92,7 +93,7 @@ const FloatingButtonComponent: React.FC<FloatingButtonComponentProps> =
             <View
               style={{
                 position: "absolute",
-                top: -5,
+                top: -15,
                 right: -10,
                 backgroundColor: "#ff4444",
                 borderRadius: 10,
@@ -141,18 +142,14 @@ const BackgroundCurve: React.FC<BackgroundCurveProps> =
       const path = `
     M0 0
     L${centerOffset} 0
-    C${centerOffset} 0 ${centerOffset + leftEdge * 0.8} 0 ${
-      centerOffset + leftEdge
-    } 0
-    C${centerOffset + leftControl1} 0 ${
-      centerOffset + leftControl2
-    } ${notchHeight} ${centerOffset + center} ${notchHeight}
-    C${centerOffset + rightControl1} ${notchHeight * 0.99} ${
-      centerOffset + rightControl2
-    } 0 ${centerOffset + rightEdge} 0
-    C${centerOffset + rightEdge + (curveWidth - rightEdge) * 0.1} 0 ${
-      centerOffset + curveWidth
-    } 0 ${centerOffset + curveWidth} 0
+    C${centerOffset} 0 ${centerOffset + leftEdge * 0.8} 0 ${centerOffset + leftEdge
+        } 0
+    C${centerOffset + leftControl1} 0 ${centerOffset + leftControl2
+        } ${notchHeight} ${centerOffset + center} ${notchHeight}
+    C${centerOffset + rightControl1} ${notchHeight * 0.99} ${centerOffset + rightControl2
+        } 0 ${centerOffset + rightEdge} 0
+    C${centerOffset + rightEdge + (curveWidth - rightEdge) * 0.1} 0 ${centerOffset + curveWidth
+        } 0 ${centerOffset + curveWidth} 0
     L${totalWidth} 0
     V${height}
     H0
@@ -201,6 +198,7 @@ const CurvedBottomTabsCore: React.FC<CurvedBottomTabsProps> =
       currentIndex,
       onPress,
       gradient,
+      floatingButtonGradient,
       barHeight = 9,
       buttonScale = 6,
       activeColor = "#ffffff",
@@ -226,6 +224,9 @@ const CurvedBottomTabsCore: React.FC<CurvedBottomTabsProps> =
       ).current;
 
       const processedGradient = processGradient<string[]>(gradient);
+      const floatingGradient = processGradient<string[]>(
+        floatingButtonGradient ?? gradient
+      );
 
       useEffect(() => {
         if (!hideWhenKeyboardShown) return;
@@ -258,7 +259,7 @@ const CurvedBottomTabsCore: React.FC<CurvedBottomTabsProps> =
         floatingAnimations.forEach(
           (anim: SharedValue<number>, index: number) => {
             anim.value = withSpring<number>(
-              index === targetIndex ? -VIEWPORT_HEIGHT * 4.2 : 0,
+              index === targetIndex ? -VIEWPORT_HEIGHT * 1.6 : 0,
               {
                 damping: 10,
                 stiffness: 100,
@@ -314,26 +315,28 @@ const CurvedBottomTabsCore: React.FC<CurvedBottomTabsProps> =
             }));
 
             return (
-              <Animated.View
+              <TouchableOpacity
                 key={tab.id}
-                style={[styles.tabWrapper, animatedTabStyle]}
+                onPress={handlePress}
+                style={styles.tabWrapper}
+                activeOpacity={0.9}
               >
-                <TouchableOpacity
-                  onPress={handlePress}
-                  style={styles.tabTouchable}
-                  activeOpacity={0.9}
-                >
-                  {isActive ? (
-                    <FloatingButtonComponent
-                      icon={tab.icon}
-                      tintColor={activeColor}
-                      gradient={processedGradient}
-                      scale={buttonScale}
-                      shadow={shadow}
-                      badge={tab.badge}
-                    />
-                  ) : (
-                    <>
+                <View style={styles.tabIconRowFixed}>
+                  <Animated.View style={[styles.tabIconRowAnimated, animatedTabStyle]}>
+                    {isActive ? (
+                      <View style={styles.floatingButtonWrap} pointerEvents="box-none">
+                        <View style={styles.floatingButtonInner}>
+                          <FloatingButtonComponent
+                            icon={tab.icon}
+                            tintColor={activeColor}
+                            gradient={floatingGradient}
+                            scale={buttonScale}
+                            shadow={shadow}
+                            badge={tab.badge}
+                          />
+                        </View>
+                      </View>
+                    ) : (
                       <View style={styles.iconWrapper}>
                         {tab.icon}
                         {tab.badge !== undefined && tab.badge > 0 && (
@@ -344,13 +347,21 @@ const CurvedBottomTabsCore: React.FC<CurvedBottomTabsProps> =
                           </View>
                         )}
                       </View>
-                      <Text style={[styles.tabLabel, { color: labelColor }]}>
-                        {tab.title}
-                      </Text>
-                    </>
-                  )}
-                </TouchableOpacity>
-              </Animated.View>
+                    )}
+                  </Animated.View>
+                </View>
+                <Text
+                  style={[
+                    styles.tabLabel,
+                    {
+                      color: isActive ? activeColor : labelColor,
+                      fontWeight: isActive ? "700" : "500",
+                    },
+                  ]}
+                >
+                  {tab.title}
+                </Text>
+              </TouchableOpacity>
             );
           })}
         </View>
@@ -384,18 +395,50 @@ const createStyles = <T extends StyleConfig>({
     tabWrapper: {
       flex: 1,
       zIndex: 30,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingBottom: Platform.OS === "ios" ? VIEWPORT_HEIGHT * 0.98 : 0,
+    },
+    tabIconRowFixed: {
+      height: 24,
+      width: "100%",
+      alignItems: "center",
+      justifyContent: "flex-end",
+      overflow: "visible",
+    },
+    tabIconRowAnimated: {
+      height: 24,
+      width: "100%",
+      alignItems: "center",
+      justifyContent: "flex-end",
+      overflow: "visible",
+    },
+    floatingButtonWrap: {
+      position: "absolute",
+      bottom: 0,
+      left: 0,
+      right: 0,
+      height: 24,
+      alignItems: "center",
+      justifyContent: "flex-end",
+      overflow: "visible",
+    },
+    floatingButtonInner: {
+      position: "absolute",
+      bottom: 0,
+      alignItems: "center",
+      justifyContent: "center",
+      overflow: "visible",
     },
     tabTouchable: {
       alignItems: "center",
       justifyContent: "center",
-      flex: 1,
-      paddingBottom: Platform.OS === "ios" ? VIEWPORT_HEIGHT * 0.98 : 0,
     },
     tabLabel: {
       fontSize: textSize,
       fontFamily,
       textAlign: "center",
-      marginTop: 10,
+      marginTop: 6,
     },
     iconWrapper: {
       position: "relative",
@@ -429,32 +472,10 @@ export const CurvedBottomTabs: React.FC<
       descriptors,
       navigation,
       gradients = ["#121212", "#1A1A1A"],
+      floatingButtonGradient,
+      activeColor,
+      labelColor,
     }) => {
-      const tabs: Tab[] = state.routes.map((route, index) => {
-        const { options } = descriptors[route.key];
-        const isActive = state.index === index;
-
-        return {
-          id: route.key,
-          title:
-            typeof options.tabBarLabel === "string"
-              ? options.tabBarLabel
-              : options.title !== undefined
-                ? options.title
-                : route.name,
-          icon: options?.tabBarIcon
-            ? options.tabBarIcon({
-                focused: isActive,
-                color: isActive ? "#ffffff" : "#cccccc",
-                size: 24,
-              })
-            : null,
-          badge:
-            typeof options.tabBarBadge === "number"
-              ? options.tabBarBadge
-              : undefined,
-        };
-      });
 
       const handlePress = (index: number, tab: Tab): void => {
         const route = state.routes[index];
@@ -470,12 +491,50 @@ export const CurvedBottomTabs: React.FC<
         }
       };
 
+      const displayTitle = (
+        route: { name: string },
+        options: Record<string, unknown>
+      ): string => {
+        const label = options.tabBarLabel;
+        if (typeof label === "string") return label;
+        if (typeof options.title === "string") return options.title;
+        const name = String(route.name ?? "");
+        if (name === "favorites/index" || name === "favorites") return "Favorites";
+        if (name === "settings/index" || name === "settings") return "Settings";
+        if (name === "index") return "Home";
+        if (name === "champions") return "Champions";
+        return name.replace(/\/index$/, "").replace(/^\w/, (c) => c.toUpperCase());
+      };
+
+      const tabsWithTitles: Tab[] = state.routes.map((route, index) => {
+        const { options } = descriptors[route.key];
+        const isActive = state.index === index;
+        return {
+          id: route.key,
+          title: displayTitle(route, options as Record<string, unknown>),
+          icon: options?.tabBarIcon
+            ? options.tabBarIcon({
+              focused: isActive,
+              color: isActive ? "#c89b3c" : "#9898a6",
+              size: 24,
+            })
+            : null,
+          badge:
+            typeof options.tabBarBadge === "number"
+              ? options.tabBarBadge
+              : undefined,
+        };
+      });
+
       return (
         <CurvedBottomTabsCore
-          tabs={tabs}
+          tabs={tabsWithTitles}
           currentIndex={state.index}
           onPress={handlePress}
           gradient={gradients}
+          floatingButtonGradient={floatingButtonGradient}
+          activeColor={activeColor ?? "#c89b3c"}
+          labelColor={labelColor ?? "#9898a6"}
         />
       );
     },

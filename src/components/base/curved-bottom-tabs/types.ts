@@ -29,6 +29,8 @@ interface CurvedBottomTabsProps {
   onPress: (index: number, tab: Tab) => void;
 
   readonly gradient?: string[];
+  /** Lighter gradient for the active-tab circle; defaults to gradient if not set */
+  readonly floatingButtonGradient?: string[];
   readonly barHeight?: number;
   readonly buttonScale?: number;
   readonly activeColor?: string;
@@ -89,6 +91,10 @@ interface NavigationDescriptor {
 }
 interface CurvedTabBarNavigationProps {
   gradients?: string[];
+  /** Lighter gradient for the active-tab circle so it stands out from the bar */
+  floatingButtonGradient?: string[];
+  activeColor?: string;
+  labelColor?: string;
 }
 
 export type {

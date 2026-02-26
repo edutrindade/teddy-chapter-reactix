@@ -24,6 +24,7 @@ interface AnimatedHeaderProps {
   readonly largeTitle: string;
   readonly subtitle?: string;
   readonly children: React.ReactNode;
+  readonly leftComponent?: React.ReactNode;
   readonly rightComponent?: React.ReactNode;
   readonly showsVerticalScrollIndicator?: boolean;
   readonly contentContainerStyle?: StyleProp<ViewStyle>;
@@ -36,6 +37,7 @@ interface AnimatedHeaderProps {
 
   readonly largeHeaderTitleStyle?: StyleProp<TextStyle>;
   readonly largeHeaderSubtitleStyle?: StyleProp<TextStyle>;
+  readonly largeTitleContainerStyle?: StyleProp<ViewStyle>;
   readonly smallHeaderTitleStyle?: StyleProp<TextStyle>;
   readonly smallHeaderSubtitleStyle?: StyleProp<TextStyle>;
 }

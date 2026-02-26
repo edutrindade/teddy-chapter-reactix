@@ -34,6 +34,7 @@ export const AnimatedHeaderScrollView: React.FC<AnimatedHeaderProps> &
     largeTitle,
     subtitle,
     children,
+    leftComponent,
     rightComponent,
     showsVerticalScrollIndicator = false,
     contentContainerStyle,
@@ -56,6 +57,7 @@ export const AnimatedHeaderScrollView: React.FC<AnimatedHeaderProps> &
     largeTitleBlurIntensity = 20,
     largeHeaderTitleStyle: _largeTitleStyle = { fontSize: 40 },
     largeHeaderSubtitleStyle,
+    largeTitleContainerStyle,
     smallHeaderSubtitleStyle: _smallHeaderSubtitleStylez,
     smallHeaderTitleStyle,
   }: AnimatedHeaderProps):
@@ -271,6 +273,11 @@ export const AnimatedHeaderScrollView: React.FC<AnimatedHeaderProps> &
           ]}
         >
           <View style={styles.fixedHeaderContent}>
+            {leftComponent ? (
+              <View style={styles.leftComponentContainer}>
+                {leftComponent}
+              </View>
+            ) : null}
             <View style={styles.fixedHeaderTextContainer}>
               <Animated.Text
                 style={[styles.smallHeaderTitle, smallHeaderTitleStyle]}
@@ -339,7 +346,7 @@ export const AnimatedHeaderScrollView: React.FC<AnimatedHeaderProps> &
             contentContainerStyle,
           ]}
         >
-          <Animated.View style={[styles.largeTitleContainer, largeTitleStyle]}>
+          <Animated.View style={[styles.largeTitleContainer, largeTitleContainerStyle, largeTitleStyle]}>
             <View style={styles.largeTitleTextContainer}>
               <Animated.Text
                 style={[
@@ -419,6 +426,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.gray[400],
     textAlign: "center",
+  },
+  leftComponentContainer: {
+    position: "absolute",
+    left: spacing.lg,
+    zIndex: 12,
   },
   rightComponentContainer: {
     marginLeft: spacing.md,

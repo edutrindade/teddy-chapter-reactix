@@ -41,7 +41,7 @@ const DialogContext = createContext<ExtendedDialogContextType | undefined>(
   undefined,
 );
 
-const useDialogContext = (): ExtendedDialogContextType => {
+export const useDialogContext = (): ExtendedDialogContextType => {
   const context = useContext(DialogContext);
   if (!context) {
     throw new Error("Dialog components must be used within Dialog");

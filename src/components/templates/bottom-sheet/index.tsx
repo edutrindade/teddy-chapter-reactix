@@ -672,4 +672,5 @@ const styles = StyleSheet.create({
   },
 });
 
+export type { BottomSheetMethods } from "./types";
 export default BottomSheet;
